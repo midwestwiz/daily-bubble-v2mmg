@@ -58,8 +58,7 @@ st.subheader("Positive News Aggregator for St. Louis")
 # --- NEWS FETCHING FUNCTION ---
 def get_stl_news():
     # RSS Feed for St. Louis News (Google News)
-    rss_url = "https://news.google.com/rss/search?q=St.+Louis+community+good+news&hl=en-US&gl=US&ceid=US:en"
-    feed = feedparser.parse(rss_url)
+    rss_url = "https://news.google.com/..."    feed = feedparser.parse(rss_url)
     return feed.entries
 
 # --- DISPLAY NEWS ---
