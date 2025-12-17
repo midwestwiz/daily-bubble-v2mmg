@@ -10,21 +10,28 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CUSTOM CSS (Green & White Theme) ---
+# --- CUSTOM CSS (Forces Light Mode & Public Styling) ---
 st.markdown("""
     <style>
+    /* Force background to white and text to dark grey */
+    .stApp {
+        background-color: #ffffff;
+        color: #333333;
+    }
     .main {
         background-color: #ffffff;
     }
-    .stApp {
-        background-color: #ffffff;
+    /* Force all standard text to be dark */
+    p, li, .stMarkdown {
+        color: #333333 !important;
     }
     h1, h2, h3 {
-        color: #2E8B57; /* SeaGreen */
+        color: #2E8B57 !important; /* SeaGreen */
     }
+    /* Card Styling */
     .news-card {
         padding: 20px;
-        background-color: #f0fdf4; /* Very light green */
+        background-color: #f0fdf4; 
         border-radius: 10px;
         border: 1px solid #bbf7d0;
         margin-bottom: 15px;
@@ -34,22 +41,25 @@ st.markdown("""
         color: #15803d;
         font-weight: bold;
     }
+    /* Hide the default Streamlit menu slightly for cleaner look */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR ---
+# --- SIDEBAR (Public View) ---
 with st.sidebar:
     st.image("https://via.placeholder.com/150x50?text=V2MMG", use_container_width=True)
-    st.header("Production Suite")
-    st.write("Welcome, Tyrone.")
+    st.header("Dashboard Controls") # Renamed from Production Suite
+    st.write("Customize your news feed:")
     st.write("---")
     keywords = st.multiselect(
-        "Filter News By:",
+        "Filter Stories By:",
         ["Community", "Sustainability", "Grant", "Volunteer", "St. Louis"],
         default=["Community", "St. Louis"]
     )
     st.write("---")
-    st.info("Status: System Online")
+    st.info("ℹ️ Updates every 24 hours")
 
 # --- MAIN APP ---
 st.title("🫧 The Daily Bubble")
@@ -94,10 +104,6 @@ try:
 except Exception as e:
     st.error(f"Could not load news feed: {e}")
 
-# --- SCRIPT GENERATOR (Placeholder for Phase 2) ---
+# --- SCRIPT GENERATOR (Hidden for Public/Demo Mode) ---
 st.write("---")
-st.header("🎙️ Broadcast Script Generator")
-st.write("Select stories above to generate your daily script.")
-if st.button("Generate Script (AI)"):
-    st.success("AI Script Generation coming in Phase 2! (Requires API Key)")
-    st.text_area("Script Preview", "Welcome to The Daily Bubble! I'm Tyrone Johnson. Today in St. Louis...", height=150)
+st.caption("Powered by V2MMG Technology | © 2025")
