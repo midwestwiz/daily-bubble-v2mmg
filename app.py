@@ -10,25 +10,42 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CUSTOM CSS (Forces Light Mode & Public Styling) ---
+# --- CUSTOM CSS (The V2MMG Brand Theme) ---
 st.markdown("""
     <style>
-    /* Force background to white and text to dark grey */
+    /* 1. Force the Main Background to White */
     .stApp {
         background-color: #ffffff;
-        color: #333333;
     }
-    .main {
-        background-color: #ffffff;
+    
+    /* 2. Force the Sidebar Background to Light Grey */
+    [data-testid="stSidebar"] {
+        background-color: #f5f5f5;
     }
-    /* Force all standard text to be dark */
-    p, li, .stMarkdown {
+    
+    /* 3. Text Colors: Dark Grey for readability */
+    p, h1, h2, h3, li, .stMarkdown {
         color: #333333 !important;
     }
-    h1, h2, h3 {
-        color: #2E8B57 !important; /* SeaGreen */
+    
+    /* 4. Fix the Sidebar Labels (make them dark) */
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
+        color: #333333 !important;
     }
-    /* Card Styling */
+    
+    /* 5. THE FIX: Force the Button to be V2MMG Green with White Text */
+    div.stButton > button {
+        background-color: #2E8B57 !important; /* SeaGreen */
+        color: #ffffff !important; /* White Text */
+        border: none;
+        font-weight: bold;
+    }
+    div.stButton > button:hover {
+        background-color: #15803d !important; /* Darker Green on Hover */
+        color: #ffffff !important;
+    }
+    
+    /* 6. Card Styling */
     .news-card {
         padding: 20px;
         background-color: #f0fdf4; 
@@ -38,10 +55,11 @@ st.markdown("""
     }
     .source-tag {
         font-size: 0.8em;
-        color: #15803d;
+        color: #15803d !important;
         font-weight: bold;
     }
-    /* Hide the default Streamlit menu slightly for cleaner look */
+    
+    /* 7. Hide Menu */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
@@ -50,7 +68,7 @@ st.markdown("""
 # --- SIDEBAR (Public View) ---
 with st.sidebar:
     st.image("https://via.placeholder.com/150x50?text=V2MMG", use_container_width=True)
-    st.header("Dashboard Controls") # Renamed from Production Suite
+    st.header("Dashboard Controls") 
     st.write("Customize your news feed:")
     st.write("---")
     keywords = st.multiselect(
