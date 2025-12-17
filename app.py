@@ -53,12 +53,13 @@ with st.sidebar:
 
 # --- MAIN APP ---
 st.title("🫧 The Daily Bubble")
-st.subheader("Positive News Aggregator for St. Louis")
+st.subheader("Positive News Aggregator for St. Louis (Last 7 Days)")
 
 # --- NEWS FETCHING FUNCTION ---
 def get_stl_news():
-    # RSS Feed for St. Louis News (Google News)
-    rss_url = "https://news.google.com/..."    feed = feedparser.parse(rss_url)
+    # RSS Feed for St. Louis News (Google News) - FILTERED FOR LAST 7 DAYS
+    rss_url = "https://news.google.com/rss/search?q=St.+Louis+community+good+news+when:7d&hl=en-US&gl=US&ceid=US:en"
+    feed = feedparser.parse(rss_url)
     return feed.entries
 
 # --- DISPLAY NEWS ---
@@ -72,6 +73,9 @@ try:
     
     # Create columns for a grid layout
     cols = st.columns(2)
+    
+    if not news_items:
+        st.warning("No recent stories found in the last 7 days. Try removing the time filter or checking back later.")
     
     for index, item in enumerate(news_items[:10]): # Show top 10
         with cols[index % 2]:
