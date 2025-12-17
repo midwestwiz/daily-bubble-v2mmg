@@ -144,7 +144,4 @@ with st.spinner("Blowing bubbles... (Fetching news)"):
 # Footer
 st.markdown("---")
 st.markdown("<div style='text-align: center; color: #888;'>Made with 💚 for St. Louis</div>", unsafe_allow_html=True)
-Good
-Bad
-Review Changes
 
