@@ -19,7 +19,7 @@ st.markdown("""
     }
     
     /* 2. Force the Sidebar Background to Light Grey */
-    [data-testid="stSidebar"] {
+    section[data-testid="stSidebar"] {
         background-color: #f5f5f5;
     }
     
@@ -85,8 +85,9 @@ st.subheader("Positive News Aggregator for St. Louis (Last 7 Days)")
 
 # --- NEWS FETCHING FUNCTION ---
 def get_stl_news():
-    # RSS Feed for St. Louis News (Google News) - FILTERED FOR LAST 7 DAYS
-    rss_url = "https://news.google.com/rss/search?q=St.+Louis+community+good+news+when:7d&hl=en-US&gl=US&ceid=US:en"
+    # UPDATED: Broader Search to catch more fresh stories
+    # Now looking for: Community OR Grant OR Sustainability OR Award
+    rss_url = "https://news.google.com/rss/search?q=St.+Louis+(community+OR+grant+OR+sustainability+OR+award)+when:7d&hl=en-US&gl=US&ceid=US:en"
     feed = feedparser.parse(rss_url)
     return feed.entries
 
