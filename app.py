@@ -1,135 +1,128 @@
 import streamlit as st
+import pandas as pd
 import feedparser
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
-# --- PAGE CONFIGURATION ---
+# --- 1. CONFIGURATION & HEARTBEAT ---
 st.set_page_config(
     page_title="The Daily Bubble",
     page_icon="🫧",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
-st.set_page_config(
-    page_title="The Daily Bubble",
-    ...
-) 
 
-# PASTE HERE (On a new line)
+# V2MMG: Heartbeat - Auto-refresh every 15 minutes to keep app awake
+# This prevents the app from "sleeping" on the free tier
 st_autorefresh(interval=15 * 60 * 1000, key="daily_bubble_refresh")
-# --- CUSTOM CSS (The V2MMG Brand Theme) ---
+
+# --- 2. V2MMG STYLING (Green & White) ---
 st.markdown("""
     <style>
-    /* 1. Force the Main Background to White */
+    /* Main Background to White */
     .stApp {
         background-color: #ffffff;
+        color: #000000;
     }
     
-    /* 2. Force the Sidebar Background to Light Grey */
-    section[data-testid="stSidebar"] {
-        background-color: #f5f5f5;
+    /* V2MMG Green Accents */
+    h1, h2, h3 {
+        color: #2E7D32 !important; 
+        font-family: 'Helvetica', sans-serif;
     }
     
-    /* 3. Text Colors: Dark Grey for readability */
-    p, h1, h2, h3, li, .stMarkdown {
-        color: #333333 !important;
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #f0fdf4; /* Light mint green */
+        border-right: 2px solid #2E7D32;
     }
     
-    /* 4. Fix the Sidebar Labels (make them dark) */
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
-        color: #333333 !important;
-    }
-    
-    /* 5. THE FIX: Force the Button to be V2MMG Green with White Text */
-    div.stButton > button {
-        background-color: #2E8B57 !important; /* SeaGreen */
-        color: #ffffff !important; /* White Text */
-        border: none;
-        font-weight: bold;
-    }
-    div.stButton > button:hover {
-        background-color: #15803d !important; /* Darker Green on Hover */
-        color: #ffffff !important;
-    }
-    
-    /* 6. Card Styling */
+    /* Cards for News Items */
     .news-card {
+        background-color: #ffffff;
         padding: 20px;
-        background-color: #f0fdf4; 
         border-radius: 10px;
-        border: 1px solid #bbf7d0;
-        margin-bottom: 15px;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .source-tag {
-        font-size: 0.8em;
-        color: #15803d !important;
+    .news-title {
+        color: #1b5e20;
+        font-size: 1.2rem;
         font-weight: bold;
+        text-decoration: none;
     }
-    
-    /* 7. Hide Menu */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+    .news-meta {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# --- SIDEBAR (Public View) ---
-with st.sidebar:
-    st.image("https://via.placeholder.com/150x50?text=V2MMG", use_container_width=True)
-    st.header("Dashboard Controls") 
-    st.write("Customize your news feed:")
-    st.write("---")
-    keywords = st.multiselect(
-        "Filter Stories By:",
-        ["Community", "Sustainability", "Grant", "Volunteer", "St. Louis"],
-        default=["Community", "St. Louis"]
-    )
-    st.write("---")
-    st.info("ℹ️ Updates every 24 hours")
+# --- 3. FUNCTIONS ---
 
-# --- MAIN APP ---
-st.title("🫧 The Daily Bubble")
-st.subheader("Positive News Aggregator for St. Louis (Last 7 Days)")
-
-# --- NEWS FETCHING FUNCTION ---
-def get_stl_news():
-    # UPDATED: Broader Search to catch more fresh stories
-    # Now looking for: Community OR Grant OR Sustainability OR Award
-    rss_url = "https://news.google.com/rss/search?q=St.+Louis+(community+OR+grant+OR+sustainability+OR+award)+when:7d&hl=en-US&gl=US&ceid=US:en"
+def fetch_st_louis_news():
+    """Fetches news from Google News RSS for St. Louis"""
+    # URL for Google News search: "St. Louis" + "Good News" (optimistic filter)
+    rss_url = "https://news.google.com/rss/search?q=St.+Louis+Missouri+when:7d&hl=en-US&gl=US&ceid=US:en"
+    
     feed = feedparser.parse(rss_url)
-    return feed.entries
-
-# --- DISPLAY NEWS ---
-if st.button("🔄 Refresh News Feed"):
-    st.rerun()
-
-st.write("### 📰 Latest Headlines")
-
-try:
-    news_items = get_stl_news()
+    news_items = []
     
-    # Create columns for a grid layout
-    cols = st.columns(2)
+    for entry in feed.entries:
+        news_items.append({
+            'title': entry.title,
+            'link': entry.link,
+            'published': entry.published,
+            'summary': entry.get('summary', 'No summary available.')
+        })
     
-    if not news_items:
-        st.warning("No recent stories found in the last 7 days. Try removing the time filter or checking back later.")
+    return news_items
+
+# --- 4. MAIN APP LAYOUT ---
+
+# Sidebar Controls
+with st.sidebar:
+    st.image("https://placehold.co/200x100/2E7D32/ffffff?text=V2MMG", use_container_width=True)
+    st.header("Dashboard Controls")
     
-    for index, item in enumerate(news_items[:10]): # Show top 10
-        with cols[index % 2]:
-            # Clean up the date
-            published = item.get("published", "Recent")
-            
-            # HTML Card
+    # Keyword Filter
+    filter_options = ["All", "Community", "Sustainability", "Grant", "Volunteer", "Arts", "Business"]
+    selected_filter = st.selectbox("Filter News By:", filter_options)
+    
+    st.markdown("---")
+    st.write("Logged in as: **Tyrone Johnson**")
+    st.caption(f"Last Updated: {datetime.now().strftime('%I:%M %p')}")
+
+# Main Feed
+st.title("The Daily Bubble 🫧")
+st.subheader("St. Louis Positive News Feed")
+
+# Load Data
+news_data = fetch_st_louis_news()
+
+# Display News
+if not news_data:
+    st.warning("No news found at the moment. Check your connection.")
+else:
+    count = 0
+    for item in news_data:
+        # Filter Logic
+        show_item = True
+        if selected_filter != "All":
+            # Check if filter keyword is in the title (case insensitive)
+            if selected_filter.lower() not in item['title'].lower():
+                show_item = False
+        
+        # Render Card
+        if show_item:
+            count += 1
             st.markdown(f"""
             <div class="news-card">
-                <div class="source-tag">SOURCE: {item.source.title} | {published}</div>
-                <h3>{item.title}</h3>
-                <p><a href="{item.link}" target="_blank" style="text-decoration: none; color: #2E8B57;"><b>🔗 Read Full Story</b></a></p>
+                <a href="{item['link']}" target="_blank" class="news-title">{item['title']}</a>
+                <div class="news-meta">📅 {item['published']}</div>
             </div>
             """, unsafe_allow_html=True)
 
-except Exception as e:
-    st.error(f"Could not load news feed: {e}")
-
-# --- SCRIPT GENERATOR (Hidden for Public/Demo Mode) ---
-st.write("---")
-st.caption("Powered by V2MMG Technology | © 2025")
+    if count == 0:
+        st.info(f"No stories found matching '{selected_filter}'. Try selecting 'All'.")
