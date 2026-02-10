@@ -1,128 +1,129 @@
 import streamlit as st
-import pandas as pd
 import feedparser
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
-# --- 1. CONFIGURATION & HEARTBEAT ---
+# --- 1. CONFIGURATION ---
 st.set_page_config(
     page_title="The Daily Bubble",
     page_icon="🫧",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed" # Hide sidebar for full immersion
 )
 
-# V2MMG: Heartbeat - Auto-refresh every 15 minutes to keep app awake
-# This prevents the app from "sleeping" on the free tier
-st_autorefresh(interval=15 * 60 * 1000, key="daily_bubble_refresh")
+# V2MMG: HEARTBEAT
+# Refresh every 10 minutes (600,000 ms) to keep news and clock fresh
+st_autorefresh(interval=10 * 60 * 1000, key="daily_bubble_pulse")
 
-# --- 2. V2MMG STYLING (Green & White) ---
+# --- 2. V2MMG STYLING ---
 st.markdown("""
     <style>
-    /* Main Background to White */
-    .stApp {
-        background-color: #ffffff;
-        color: #000000;
-    }
+    .stApp { background-color: #ffffff; }
     
-    /* V2MMG Green Accents */
-    h1, h2, h3 {
-        color: #2E7D32 !important; 
-        font-family: 'Helvetica', sans-serif;
-    }
-    
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background-color: #f0fdf4; /* Light mint green */
-        border-right: 2px solid #2E7D32;
-    }
-    
-    /* Cards for News Items */
-    .news-card {
-        background-color: #ffffff;
+    /* Big Header for Distance Reading */
+    .header-box {
+        background-color: #2E7D32;
         padding: 20px;
         border-radius: 10px;
-        border: 1px solid #e0e0e0;
+        text-align: center;
+        margin-bottom: 20px;
+        color: white;
+    }
+    
+    /* The News Cards */
+    .news-card {
+        background-color: #f1f8e9; /* Very light green */
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 8px solid #2E7D32;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s; /* Smooth animation */
     }
+    .news-card:hover {
+        transform: scale(1.02); /* Pop out slightly on hover */
+    }
+    
     .news-title {
         color: #1b5e20;
-        font-size: 1.2rem;
-        font-weight: bold;
+        font-size: 1.5rem; /* Larger font for distance */
+        font-weight: 800;
+        font-family: 'Helvetica', sans-serif;
         text-decoration: none;
+        display: block;
+        margin-bottom: 10px;
     }
+    
     .news-meta {
-        color: #666;
+        color: #558b2f;
+        font-size: 1rem;
+        font-weight: bold;
+    }
+    
+    /* Footer Timestamp */
+    .footer-time {
+        text-align: center;
+        color: #9e9e9e;
         font-size: 0.9rem;
-        margin-top: 5px;
+        margin-top: 40px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. FUNCTIONS ---
+# --- 3. LOGIC ---
 
-def fetch_st_louis_news():
-    """Fetches news from Google News RSS for St. Louis"""
-    # URL for Google News search: "St. Louis" + "Good News" (optimistic filter)
-    rss_url = "https://news.google.com/rss/search?q=St.+Louis+Missouri+when:7d&hl=en-US&gl=US&ceid=US:en"
-    
+def get_news():
+    # St. Louis + Positive Keywords
+    rss_url = "https://news.google.com/rss/search?q=St.+Louis+Missouri+community+OR+grant+OR+success&hl=en-US&gl=US&ceid=US:en"
     feed = feedparser.parse(rss_url)
-    news_items = []
-    
-    for entry in feed.entries:
-        news_items.append({
-            'title': entry.title,
-            'link': entry.link,
-            'published': entry.published,
-            'summary': entry.get('summary', 'No summary available.')
-        })
-    
-    return news_items
+    return feed.entries[:5] # Only get top 5 to keep it clean
 
-# --- 4. MAIN APP LAYOUT ---
+# --- 4. LAYOUT ---
 
-# Sidebar Controls
-with st.sidebar:
-    st.image("https://placehold.co/200x100/2E7D32/ffffff?text=V2MMG", use_container_width=True)
-    st.header("Dashboard Controls")
-    
-    # Keyword Filter
-    filter_options = ["All", "Community", "Sustainability", "Grant", "Volunteer", "Arts", "Business"]
-    selected_filter = st.selectbox("Filter News By:", filter_options)
-    
-    st.markdown("---")
-    st.write("Logged in as: **Tyrone Johnson**")
-    st.caption(f"Last Updated: {datetime.now().strftime('%I:%M %p')}")
+# A. Header (The "TV Screen" Look)
+current_time = datetime.now().strftime("%I:%M %p")
+current_date = datetime.now().strftime("%A, %B %d")
 
-# Main Feed
-st.title("The Daily Bubble 🫧")
-st.subheader("St. Louis Positive News Feed")
+st.markdown(f"""
+<div class="header-box">
+    <h1 style='color: white; margin:0;'>🫧 THE DAILY BUBBLE</h1>
+    <h3 style='color: #a5d6a7; margin:0;'>V2MMG NEWS DASHBOARD</h3>
+</div>
+""", unsafe_allow_html=True)
 
-# Load Data
-news_data = fetch_st_louis_news()
+# B. The Ticker (Simple Marquee)
+st.markdown("""
+<div style="background-color: #000; color: #0f0; padding: 10px; font-family: monospace; overflow: hidden; white-space: nowrap;">
+    <marquee behavior="scroll" direction="left">Creating sustainable narratives for St. Louis...  •  Voyage 2 Mecca Media Group  •  Reporting on The Ville, Kingsway, and beyond...</marquee>
+</div>
+<br>
+""", unsafe_allow_html=True)
 
-# Display News
-if not news_data:
-    st.warning("No news found at the moment. Check your connection.")
+# C. The News Feed
+news = get_news()
+
+if not news:
+    st.error("Waiting for connection...")
 else:
-    count = 0
-    for item in news_data:
-        # Filter Logic
-        show_item = True
-        if selected_filter != "All":
-            # Check if filter keyword is in the title (case insensitive)
-            if selected_filter.lower() not in item['title'].lower():
-                show_item = False
+    for item in news:
+        # Clean up date format if possible
+        pub_date = item.published.split(',')[1].split('+')[0].strip() if ',' in item.published else "Today"
         
-        # Render Card
-        if show_item:
-            count += 1
-            st.markdown(f"""
-            <div class="news-card">
-                <a href="{item['link']}" target="_blank" class="news-title">{item['title']}</a>
-                <div class="news-meta">📅 {item['published']}</div>
+        st.markdown(f"""
+        <div class="news-card">
+            <a href="{item.link}" target="_blank" class="news-title">{item.title}</a>
+            <div class="news-meta">
+                SOURCE: {item.source.title if 'source' in item else 'Google News'} • {pub_date}
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
-    if count == 0:
-        st.info(f"No stories found matching '{selected_filter}'. Try selecting 'All'.")
+# D. Footer
+st.markdown(f"""
+<div class="footer-time">
+    LAST UPDATED: {current_time} on {current_date} <br>
+    POWERED BY VOYAGE 2 MECCA MEDIA GROUP
+</div>
+""", unsafe_allow_html=True)
