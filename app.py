@@ -1,5 +1,6 @@
 import streamlit as st
 import feedparser
+import pytz  # <--- New Tool for Timezones
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
@@ -69,7 +70,7 @@ st.markdown("""
         border-bottom: 4px solid #2E7D32;
     }
     .ticker-text {
-        color: #00ff00; /* Bright Green Terminal Text */
+        color: #00ff00; 
         font-family: 'Courier New', monospace;
         font-size: 1.2rem;
         font-weight: bold;
@@ -89,6 +90,12 @@ st.markdown("""
 
 # --- 3. LOGIC ---
 
+def get_st_louis_time():
+    """Get the current time specifically for St. Louis (Central Time)"""
+    utc_now = datetime.now(pytz.utc)
+    st_louis_tz = pytz.timezone('America/Chicago')
+    return utc_now.astimezone(st_louis_tz)
+
 def get_news():
     # St. Louis + Positive Keywords
     rss_url = "https://news.google.com/rss/search?q=St.+Louis+Missouri+community+OR+grant+OR+success&hl=en-US&gl=US&ceid=US:en"
@@ -97,10 +104,12 @@ def get_news():
 
 # --- 4. LAYOUT ---
 
-# A. Header
-current_time = datetime.now().strftime("%I:%M %p")
-current_date = datetime.now().strftime("%A, %B %d")
+# Get accurate time
+now_stl = get_st_louis_time()
+current_time = now_stl.strftime("%I:%M %p")
+current_date = now_stl.strftime("%A, %B %d, %Y")
 
+# A. Header
 st.markdown(f"""
 <div class="header-box">
     <h1 style='color: white; margin:0;'>🫧 THE DAILY BUBBLE</h1>
@@ -108,7 +117,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# B. The Ticker (Updated for Kingsway East, The Ville, Greater Ville)
+# B. The Ticker (Correct Neighborhoods)
 st.markdown("""
 <div class="ticker-wrap">
     <marquee class="ticker-text" behavior="scroll" direction="left" scrollamount="10">
