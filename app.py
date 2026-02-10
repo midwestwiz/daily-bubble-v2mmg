@@ -1,6 +1,7 @@
 import streamlit as st
 import feedparser
 from datetime import datetime
+from streamlit_autorefresh import st_autorefresh
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
@@ -9,7 +10,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+st.set_page_config(
+    page_title="The Daily Bubble",
+    ...
+)  <-- The lone parenthesis you see
 
+# PASTE HERE (On a new line)
+st_autorefresh(interval=15 * 60 * 1000, key="daily_bubble_refresh")
 # --- CUSTOM CSS (The V2MMG Brand Theme) ---
 st.markdown("""
     <style>
