@@ -8,11 +8,10 @@ st.set_page_config(
     page_title="The Daily Bubble",
     page_icon="🫧",
     layout="wide",
-    initial_sidebar_state="collapsed" # Hide sidebar for full immersion
+    initial_sidebar_state="collapsed"
 )
 
-# V2MMG: HEARTBEAT
-# Refresh every 10 minutes (600,000 ms) to keep news and clock fresh
+# V2MMG: HEARTBEAT (10 mins)
 st_autorefresh(interval=10 * 60 * 1000, key="daily_bubble_pulse")
 
 # --- 2. V2MMG STYLING ---
@@ -20,7 +19,7 @@ st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* Big Header for Distance Reading */
+    /* Header Box */
     .header-box {
         background-color: #2E7D32;
         padding: 20px;
@@ -30,23 +29,23 @@ st.markdown("""
         color: white;
     }
     
-    /* The News Cards */
+    /* News Cards */
     .news-card {
-        background-color: #f1f8e9; /* Very light green */
+        background-color: #f1f8e9;
         padding: 20px;
         border-radius: 12px;
         border-left: 8px solid #2E7D32;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        transition: transform 0.2s; /* Smooth animation */
+        transition: transform 0.2s;
     }
     .news-card:hover {
-        transform: scale(1.02); /* Pop out slightly on hover */
+        transform: scale(1.02);
     }
     
     .news-title {
         color: #1b5e20;
-        font-size: 1.5rem; /* Larger font for distance */
+        font-size: 1.5rem;
         font-weight: 800;
         font-family: 'Helvetica', sans-serif;
         text-decoration: none;
@@ -60,7 +59,23 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* Footer Timestamp */
+    /* Ticker Styling */
+    .ticker-wrap {
+        width: 100%;
+        background-color: #000;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        border-bottom: 4px solid #2E7D32;
+    }
+    .ticker-text {
+        color: #00ff00; /* Bright Green Terminal Text */
+        font-family: 'Courier New', monospace;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    /* Footer */
     .footer-time {
         text-align: center;
         color: #9e9e9e;
@@ -78,11 +93,11 @@ def get_news():
     # St. Louis + Positive Keywords
     rss_url = "https://news.google.com/rss/search?q=St.+Louis+Missouri+community+OR+grant+OR+success&hl=en-US&gl=US&ceid=US:en"
     feed = feedparser.parse(rss_url)
-    return feed.entries[:5] # Only get top 5 to keep it clean
+    return feed.entries[:5]
 
 # --- 4. LAYOUT ---
 
-# A. Header (The "TV Screen" Look)
+# A. Header
 current_time = datetime.now().strftime("%I:%M %p")
 current_date = datetime.now().strftime("%A, %B %d")
 
@@ -93,22 +108,23 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# B. The Ticker (Simple Marquee)
+# B. The Ticker (Updated for Kingsway East, The Ville, Greater Ville)
 st.markdown("""
-<div style="background-color: #000; color: #0f0; padding: 10px; font-family: monospace; overflow: hidden; white-space: nowrap;">
-    <marquee behavior="scroll" direction="left">Creating sustainable narratives for St. Louis...  •  Voyage 2 Mecca Media Group  •  Reporting on The Ville, Kingsway, and beyond...</marquee>
+<div class="ticker-wrap">
+    <marquee class="ticker-text" behavior="scroll" direction="left" scrollamount="10">
+    🔴 LIVE: Reporting for Kingsway East, The Ville, and Greater Ville  •  Voyage 2 Mecca Media Group  •  Building Sustainable Narratives for St. Louis  •  Community First  •  
+    </marquee>
 </div>
-<br>
 """, unsafe_allow_html=True)
 
-# C. The News Feed
+# C. News Feed
 news = get_news()
 
 if not news:
     st.error("Waiting for connection...")
 else:
     for item in news:
-        # Clean up date format if possible
+        # Clean date logic
         pub_date = item.published.split(',')[1].split('+')[0].strip() if ',' in item.published else "Today"
         
         st.markdown(f"""
