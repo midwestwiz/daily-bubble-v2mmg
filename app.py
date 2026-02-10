@@ -13,7 +13,7 @@ st.set_page_config(
 st.set_page_config(
     page_title="The Daily Bubble",
     ...
-)  <-- The lone parenthesis you see
+) 
 
 # PASTE HERE (On a new line)
 st_autorefresh(interval=15 * 60 * 1000, key="daily_bubble_refresh")
