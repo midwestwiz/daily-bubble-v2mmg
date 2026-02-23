@@ -1,6 +1,6 @@
 import streamlit as st
 import feedparser
-import pytz  # <--- New Tool for Timezones
+import pytz
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
@@ -12,15 +12,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# V2MMG: HEARTBEAT (10 mins)
-st_autorefresh(interval=10 * 60 * 1000, key="daily_bubble_pulse")
+# V2MMG: HEARTBEAT (2 mins)
+st_autorefresh(interval=2 * 60 * 1000, key="daily_bubble_pulse")
 
 # --- 2. V2MMG STYLING ---
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* Header Box */
     .header-box {
         background-color: #2E7D32;
         padding: 20px;
@@ -30,7 +29,6 @@ st.markdown("""
         color: white;
     }
     
-    /* News Cards */
     .news-card {
         background-color: #f1f8e9;
         padding: 20px;
@@ -60,7 +58,6 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* Ticker Styling */
     .ticker-wrap {
         width: 100%;
         background-color: #000;
@@ -76,7 +73,6 @@ st.markdown("""
         font-weight: bold;
     }
 
-    /* Footer */
     .footer-time {
         text-align: center;
         color: #9e9e9e;
@@ -91,25 +87,22 @@ st.markdown("""
 # --- 3. LOGIC ---
 
 def get_st_louis_time():
-    """Get the current time specifically for St. Louis (Central Time)"""
     utc_now = datetime.now(pytz.utc)
     st_louis_tz = pytz.timezone('America/Chicago')
     return utc_now.astimezone(st_louis_tz)
 
 def get_news():
-    # St. Louis + Positive Keywords
-    rss_url = "https://news.google.com/rss/search?q=St.+Louis+Missouri+community+OR+grant+OR+success&hl=en-US&gl=US&ceid=US:en"
+    # FIXED: Restored the "when:7d" rule for recent, relevant St. Louis news
+    rss_url = "https://news.google.com/rss/search?q=St.+Louis+Missouri+when:7d&hl=en-US&gl=US&ceid=US:en"
     feed = feedparser.parse(rss_url)
-    return feed.entries[:5]
+    return feed.entries[:10] # Show top 10 recent stories
 
 # --- 4. LAYOUT ---
 
-# Get accurate time
 now_stl = get_st_louis_time()
 current_time = now_stl.strftime("%I:%M %p")
 current_date = now_stl.strftime("%A, %B %d, %Y")
 
-# A. Header
 st.markdown(f"""
 <div class="header-box">
     <h1 style='color: white; margin:0;'>🫧 THE DAILY BUBBLE</h1>
@@ -117,7 +110,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# B. The Ticker (Correct Neighborhoods)
 st.markdown("""
 <div class="ticker-wrap">
     <marquee class="ticker-text" behavior="scroll" direction="left" scrollamount="10">
@@ -126,16 +118,13 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# C. News Feed
 news = get_news()
 
 if not news:
     st.error("Waiting for connection...")
 else:
     for item in news:
-        # Clean date logic
-        pub_date = item.published.split(',')[1].split('+')[0].strip() if ',' in item.published else "Today"
-        
+        pub_date = item.published.split(',')[1].split('+')[0].strip() if ',' in item.published else "Recent"
         st.markdown(f"""
         <div class="news-card">
             <a href="{item.link}" target="_blank" class="news-title">{item.title}</a>
@@ -145,7 +134,6 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-# D. Footer
 st.markdown(f"""
 <div class="footer-time">
     LAST UPDATED: {current_time} on {current_date} <br>
